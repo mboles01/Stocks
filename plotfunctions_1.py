@@ -30,7 +30,7 @@ def plot_hist(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, yl
     for tick in ax.get_yticklabels():
         tick.set_fontname('Helvetica')
         
-    ax.text(0.6, 0.95, textbox, transform = ax.transAxes, fontsize = 18, 
+    ax.text(0.05, 0.95, textbox, transform = ax.transAxes, fontsize = 18, 
             fontname = 'Helvetica', verticalalignment = 'top', bbox = props)
 
     plt.rcParams['axes.unicode_minus'] = False
