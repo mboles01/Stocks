@@ -27,7 +27,7 @@ sp_2 = pd.DataFrame({'date': sp['date'],
                      'high to date': sp['close'].cummax(),
                      'off from high': round(100*(sp['close'] - sp['close'].cummax()) / sp['close'].cummax(),3)})
 sp_2
-# sp_2.to_csv('./data/sp_changes.csv')
+sp_2.to_csv('./data/sp_changes.csv', index=False)
 
 # # select date range to filter
 min_year = 1955
@@ -260,7 +260,7 @@ ax.grid(color=(.9, .9, .9))
 figure_name = './images/down_from_high_vs_time_since_' + str(min_year) + '.png' 
 plt.subplots_adjust(wspace = 0.35)
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.savefig(figure_name, dpi = 250)
+# plt.savefig(figure_name, dpi = 250)
 plt.show()
 
 
@@ -315,14 +315,15 @@ for i in np.arange(0,58,0.1):
     fract_pct_off = fract_pct_off.append(fract_pct_off_temp, ignore_index=True)
 fract_pct_off = fract_pct_off[::-1].reset_index().iloc[:,1:]
 
-fract_pct_off.to_csv('./data/fract_pct_off.csv', index=False)
+fract_pct_off.to_csv('./data/fract_pct_off_' + str(min_year) + '_' + str(max_year) + '.csv', index=False)
+
 
 
 ### plot line of close fraction vs. off %
 
 # linear scale
-fig, axes = plt.subplots(1, 2, figsize = (18,7))
-x = fract_pct_off['percent off']
+fig, axes = plt.subplots(1, 2, figsize = (12,5))
+x = -fract_pct_off['percent off']
 y = fract_pct_off['fraction of days']
 axes[0].plot(x, y, 'blue', linewidth=3)
 axes[0].set_xlabel('Down from high (%)', fontsize = 18, fontname = 'Helvetica', fontweight = 'bold')
@@ -347,9 +348,11 @@ plt.setp(axes[1].get_yticklabels(), fontsize=18, fontname = 'Helvetica')
 axes[0].grid(color=(.9, .9, .9))
 axes[1].grid(color=(.9, .9, .9))
 
-figure_name = './images/fraction_closes_down_since' + '.png' # + str(year)
+figure_name = './images/fraction_closes_down_since_' + str(min_year) + '_' + str(max_year) + '.png'
+plt.subplots_adjust(wspace = 0.35)
+plt.gcf().subplots_adjust(bottom=0.15)
 
-# plt.savefig(figure_name, dpi = 250)
+plt.savefig(figure_name, dpi = 250)
 plt.subplots_adjust(wspace=0.25)
 plt.show()
 
@@ -365,9 +368,8 @@ plt.show()
     
 #     fract_pct_off = fract_pct_off.append(fract_pct_off_temp, ignore_index=True)
     
-fract_pct_off = fract_pct_off[::-1].reset_index().iloc[:,1:]
+# fract_pct_off = fract_pct_off[::-1].reset_index().iloc[:,1:]
 # fract_pct_off.style.hide_index()
 
-sp_3.to_csv('./data/sp_3.csv', index=False)
 
 
