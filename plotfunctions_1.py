@@ -14,7 +14,7 @@ import pandas as pd
 
 # plot histogram
 
-def plot_hist(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, ylabel, figure_name):
+def plot_hist(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, ylabel, save, figure_name):
     fig, ax = plt.subplots(1,1,figsize=(7,7))
     bins = np.arange(round(min(data),1), max(data) + binwidth, binwidth)
     props = dict(facecolor='white', alpha=1.0)
@@ -45,10 +45,11 @@ def plot_hist(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, yl
     ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x/xscale))
     ax.xaxis.set_major_formatter(ticks)
 
-    plt.savefig(figure_name, dpi = 600)
+    if save == True:
+        plt.savefig(figure_name, dpi = 600)
     plt.show()
     
-def plot_hist_log_y(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, ylabel, yticks, figure_name):
+def plot_hist_log_y(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, ylabel, yticks, save, figure_name):
     fig, ax = plt.subplots(1,1,figsize=(7,7))
     bins = np.arange(round(min(data),1), max(data) + binwidth, binwidth)
     props = dict(facecolor='white', alpha=1.0)
@@ -84,5 +85,6 @@ def plot_hist_log_y(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlab
     ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x/xscale))
     ax.xaxis.set_major_formatter(ticks)
 
-    plt.savefig(figure_name, dpi = 600)
+    if save == True:
+        plt.savefig(figure_name, dpi = 600)
     plt.show()
