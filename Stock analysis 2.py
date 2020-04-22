@@ -265,15 +265,22 @@ plt.show()
 
 
 
-# joint plot: off from high vs. year
-import seaborn as sns
 
-# fig, ax = plt.subplots(1, 1, figsize = (7,7))
-x = 2020 - (sp_3['date'].iloc[-1] - sp_3['date'][1:]).dt.days/365
-y = sp_3['off from high'][1:]
-g = sns.jointplot(x, y, kind="hex", color="blue")
-# sns.set(font_scale = 1)
-plt.show()
+
+
+
+
+
+
+# # joint plot: off from high vs. year
+# import seaborn as sns
+
+# # fig, ax = plt.subplots(1, 1, figsize = (7,7))
+# x = 2020 - (sp_3['date'].iloc[-1] - sp_3['date'][1:]).dt.days/365
+# y = sp_3['off from high'][1:]
+# g = sns.jointplot(x, y, kind="hex", color="blue")
+# # sns.set(font_scale = 1)
+# plt.show()
 
 
 # JointGrid has a convenience function
