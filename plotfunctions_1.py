@@ -14,7 +14,7 @@ import pandas as pd
 
 # plot histogram
 
-def plot_hist(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, ylabel, save, figure_name):
+def plot_hist(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, xlabel, ylabel, save, figure_name):
     fig, ax = plt.subplots(1,1,figsize=(7,7))
     bins = np.arange(round(min(data),1), max(data) + binwidth, binwidth)
     props = dict(facecolor='white', alpha=1.0)
@@ -31,7 +31,7 @@ def plot_hist(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, yl
     for tick in ax.get_yticklabels():
         tick.set_fontname('Helvetica')
         
-    ax.text(0.05, 0.95, textbox, transform = ax.transAxes, fontsize = 18, 
+    ax.text(text_pos, 0.95, textbox, transform = ax.transAxes, fontsize = 18, 
             fontname = 'Helvetica', verticalalignment = 'top', bbox = props)
 
     plt.rcParams['axes.unicode_minus'] = False
@@ -49,7 +49,7 @@ def plot_hist(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, yl
         plt.savefig(figure_name, dpi = 600)
     plt.show()
     
-def plot_hist_log_y(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, ylabel, yticks, save, figure_name):
+def plot_hist_log_y(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, xlabel, ylabel, yticks, save, figure_name):
     fig, ax = plt.subplots(1,1,figsize=(7,7))
     bins = np.arange(round(min(data),1), max(data) + binwidth, binwidth)
     props = dict(facecolor='white', alpha=1.0)
@@ -71,7 +71,7 @@ def plot_hist_log_y(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlab
     for tick in ax.get_yticklabels():
         tick.set_fontname('Helvetica')
 
-    ax.text(0.05, 0.95, textbox, transform = ax.transAxes, fontsize = 18, 
+    ax.text(text_pos, 0.95, textbox, transform = ax.transAxes, fontsize = 18, 
             fontname = 'Helvetica', verticalalignment = 'top', bbox = props)
 
     plt.rcParams['axes.unicode_minus'] = False

@@ -30,7 +30,7 @@ sp_2
 sp_2.to_csv('./data/sp_changes.csv', index=False)
 
 # # select date range to filter
-min_year = 1955
+min_year = 1928
 max_year = 2020
 sp_3 = sp_2[(sp_2['date'] >= pd.Timestamp(min_year, 1, 1, 12)) & 
             (sp_2['date'] <= pd.Timestamp(max_year+1, 1, 1, 12))]
@@ -44,19 +44,28 @@ data = sp_3['daily change pct'][1:]
 average = np.nanmean(data)
 median = np.nanmedian(data)
 stdev = np.std(data)
+from scipy.stats import skew, kurtosis
+skew = skew(data) # negative skew - longer left-side tail
+kurtosis = kurtosis(data) # positive kurtosis - more probability density at tails than normal dist
 props = dict(facecolor='white', edgecolor='none', alpha=0.67)
-textbox = '$Daily$ $change$ (%%) \nAverage = %s \nMedian = %s \nStdev = %s' % (round(average,4), round(median,4), round(stdev,4))
+textbox = '$Daily$ $change$ (%%) \nAverage = %0.3f \nMedian = %0.3f \nSt. dev. = %0.2f \nSkew = %0.2f \nKurtosis = %0.1f' % (average, median, stdev, skew, kurtosis)
+text_pos = 0.05
 
 from plotfunctions_1 import plot_hist
-save=False
+save=True
 binwidth = 0.2
 xmin = -4; xmax = 4
-ymin = 0; ymax = 2500
+ymin = 0; ymax = 3000
 xlabel = 'Daily change (%)'; ylabel = 'Counts (days)'
 figure_name = './images/daily_changes_' + str(min_year) + '_' + str(max_year) + '.png'
-plot_hist(data, binwidth, textbox, props, xmin, xmax, ymin, ymax, xlabel, ylabel, save, figure_name)
+plot_hist(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, xlabel, ylabel, save, figure_name)
 
 
+# calculate other moments of this distribution
+import seaborn as sns
+from scipy.stats import norm
+sns.distplot(data, bins=100, fit=norm)
+plt.xlim(-4,4)
 
 # ### CALCULATE ANNUALIZED RETURNS ACROSS A DECADE ###
 

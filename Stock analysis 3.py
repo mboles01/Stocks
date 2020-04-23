@@ -8,7 +8,6 @@ os.chdir('/Users/michaelboles/Michael/Coding/2020/Insight/Project/Stocks/')
 # import warnings; warnings.simplefilter('ignore')
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib
 import numpy as np
 
 # import data
@@ -20,7 +19,7 @@ sp_changes = pd.read_csv('./data/sp_changes.csv')
 sp_changes['date'] = pd.to_datetime(sp_changes['date'])
 
 # select date range to filter
-min_year = 1955
+min_year = 1928
 max_year = 2020
 sp_3 = sp_changes[(sp_changes['date'] >= pd.Timestamp(min_year, 1, 1, 12)) & 
                   (sp_changes['date'] <= pd.Timestamp(max_year+1, 1, 1, 12))]
@@ -101,6 +100,52 @@ plt.show()
 
 # plt.grid(); ax.grid(color=(.9, .9, .9)); ax.set_axisbelow(True)
 # plt.show()
+
+
+
+### CALCULATE TIME INTERVAL BETWEEN NEIGHBORING HIGHS ###
+
+sp_5 = sp_3[sp_3['off from high'] == 0]
+high_fraction = len(sp_5)/len(sp_3)
+
+neighboring_highs = pd.DataFrame({'high date': sp_5['date'],
+                                  'high close': sp_5['close'],
+                                  'next high date': sp_5['date'].shift(-1),
+                                  'next high close': sp_5['close'].shift(-1),
+                                  'date diff': (sp_5['date'].shift(-1) - sp_5['date']).astype('timedelta64[D]'),
+                                  'close diff': round(sp_5['close'].shift(-1) - sp_5['close'], 3),
+                                  'close diff (%)': round(100*(sp_5['close'].shift(-1) - sp_5['close'])/sp_5['close'], 3)})
+
+
+# plot histogram
+
+# create textbox
+data = neighboring_highs['date diff']
+# data = neighboring_highs['close diff (%)']
+average = np.nanmean(data)
+median = np.nanmedian(data)
+stdev = np.std(data)
+props = dict(facecolor='white', edgecolor='none', alpha=0.67)
+textbox = '$Time$ $between$ $highs$ $(days)$ \nAverage = %0.1f \nMedian = %0.0f \nStdev = %0.0f' % (average, median, stdev)
+text_pos = 0.35
+
+from plotfunctions_1 import plot_hist
+save=False
+binwidth = 10
+xmin = -20; xmax = 3000
+ymin = 0; ymax = 1000
+xlabel = 'Time between highs (days)'; ylabel = 'Counts'
+figure_name = './images/time_between_highs_' + str(min_year) + '_' + str(max_year) + '.png'
+plot_hist(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, xlabel, ylabel, save, figure_name)
+
+from plotfunctions_1 import plot_hist_log_y
+save=True
+binwidth = 10
+xmin = -2; xmax = 250
+ymin = 0; ymax = 1000; yticks = [1, 10, 100, 1000]
+xlabel = 'Time between highs (days)'; ylabel = 'Counts'
+figure_name = './images/time_between_highs_log_' + str(min_year) + '_' + str(max_year) + '_2.png'
+plot_hist_log_y(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, xlabel, ylabel, yticks, save, figure_name)
 
 
 
