@@ -13,7 +13,7 @@ import numpy as np
 
 
 # Load combined S&P 500 data set
-sp = pd.read_csv('./data/sp500_all.csv')
+sp = pd.read_csv('./data/raw/sp500_all.csv')   # https://finance.yahoo.com/quote/%5EGSPC/history/ 
 sp['date'] = pd.to_datetime(sp['Date'])
 sp['close'] = sp['Close']
 sp = sp[['date', 'close']]
@@ -57,10 +57,10 @@ plt.setp(axes[1].get_yticklabels(), fontsize=14, fontname = 'Helvetica')
 axes[0].grid(color=(.9, .9, .9))
 axes[1].grid(color=(.9, .9, .9))
 
-figure_name = './images/sp_' + str(min_year) + '_' + str(max_year) + '.png'
+figure_name = './images/1 - price history/sp_' + str(min_year) + '_' + str(max_year) + '.png'
 plt.subplots_adjust(wspace = 0.35)
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.savefig(figure_name, dpi = 250)
+# plt.savefig(figure_name, dpi = 250)
 plt.show()
 
 
@@ -190,8 +190,8 @@ for tick in axes[0].get_yticklabels():
 # fig.suptitle('S&P 500 fit', fontsize = 22, fontname = 'Helvetica')
 plt.subplots_adjust(wspace = 0.35)
 plt.gcf().subplots_adjust(bottom=0.15)
-figure_name = './images/sp_fit_linear_' + str(min_year) + '_' + str(max_year) + '.png'
-plt.savefig(figure_name, dpi = 250)
+figure_name = './images/1 - price history/sp_fit_linear_' + str(min_year) + '_' + str(max_year) + '.png'
+# plt.savefig(figure_name, dpi = 250)
 plt.show()
 
 
@@ -309,6 +309,6 @@ for tick in axes[0].get_yticklabels():
 # fig.suptitle('S&P 500: exponential fit', fontsize = 22, fontname = 'Helvetica')
 plt.subplots_adjust(wspace = 0.35)
 plt.gcf().subplots_adjust(bottom=0.15)
-figure_name = './images/sp_fit_log_' + str(min_year) + '_' + str(max_year) + '.png'
+figure_name = './images/1 - price history/sp_fit_log_' + str(min_year) + '_' + str(max_year) + '.png'
 plt.savefig(figure_name, dpi = 250)
 plt.show()
