@@ -17,20 +17,170 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 
+# default font
+import matplotlib as mpl
+mpl.rc('font',family='Helvetica')
+
+
+# Load combined S&P 500 data set
+sp = pd.read_csv('./data/raw/SP_5.4.2020.csv')
+sp['date'] = pd.to_datetime(sp['Date'])
+sp['close'] = sp['Close']
+sp = sp[['date', 'close']]
+sp['log close'] = np.log(sp['close'])
+sp[::1000]
+
+
+# add daily change, high price info to dataframe
+sp_2 = pd.DataFrame({'date': sp['date'],
+                     'close': sp['close'],
+                     'daily change': round(sp.diff()['close'],4),
+                     'daily change pct': round(100*sp.diff()['close']/sp['close'].shift(periods=1),3),
+                     'high to date': sp['close'].cummax(),
+                     'off from high': round(100*(sp['close'] - sp['close'].cummax()) / sp['close'].cummax(),3)})
+
+
 # import data
 # fract_pct_off = pd.read_csv('./data/fract_pct_off_1928_2020.csv')
-sp_changes = pd.read_csv('./data/sp_changes.csv')
+# sp_changes = pd.read_csv('./data/sp_changes.csv')
 # return_vs_dip_buy = pd.read_csv('./data/return_vs_dip_buy.csv')
 
 # format date column to datetime
-sp_changes['date'] = pd.to_datetime(sp_changes['date'])
+# sp_changes['date'] = pd.to_datetime(sp_changes['date'])
 
 # select date range to filter
 min_year = 1955
 max_year = 2020
-sp_3 = sp_changes[(sp_changes['date'] >= pd.Timestamp(min_year, 1, 1, 12)) & 
-                  (sp_changes['date'] <= pd.Timestamp(max_year+1, 1, 1, 12))]
-sp_3
+sp_3 = sp_2[(sp_2['date'] >= pd.Timestamp(min_year, 1, 1, 12)) & 
+                  (sp_2['date'] <= pd.Timestamp(max_year+1, 1, 1, 12))]
+sp_3[-50:]
+
+
+
+
+### ADD NUMBER OF HIGHS COLUMN
+
+# create running counter of number of record highs
+sp_buys = sp_3.copy()
+sp_buys['highs to date'] = 0
+counter = 0
+for index, row in sp_buys.iterrows():
+    if sp_buys.at[index, 'off from high'] == 0:
+        counter += 1
+    sp_buys.at[index, 'highs to date'] = counter    
+sp_buys[-60:]
+
+
+
+
+
+### BUILD BUY TABLE
+
+buy_dip = -10
+
+sp_buys['buy'] = sp_buys['off from high'].apply(lambda x: True if x <= buy_dip else False)
+sp_buys['shares bought'] = sp_buys['buy'].apply(lambda x: 1 if x == True else 0)
+sp_buys['shares owned'] = sp_buys['shares bought'].cumsum()
+
+sp_buys.loc[sp_buys['buy'] == True, 'cash spend'] = -sp_buys['close']
+sp_buys.loc[sp_buys['buy'] == False, 'cash spend'] = 0
+
+sp_buys['cash balance'] = sp_buys['cash spend'].cumsum()
+sp_buys['market value'] = sp_buys['shares owned'] * sp_buys['close']
+sp_buys['current gain'] = sp_buys['market value'] + sp_buys['cash balance']
+
+cols = ['close', 'daily change', 'daily change pct', 'high to date', 'off from high', 'cash spend', 'cash balance', 'market value', 'current gain']
+sp_buys[cols] = sp_buys[cols].round(2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+return_vs_dip_buy = pd.DataFrame(columns=['dip', 'buy days', 'buy days (%)', 'return (%)'])
+
+for dip in np.arange(-60,0.1,0.1):
+
+    buy_dip = round(dip, 1)
+    
+    sp_buys['buy'] = sp_buys['off from high'].apply(lambda x: True if x <= buy_dip else False)
+    sp_buys['shares bought'] = sp_buys['buy'].apply(lambda x: 1 if x == True else 0)
+    sp_buys['shares owned'] = sp_buys['shares bought'].cumsum()
+    
+    sp_buys.loc[sp_buys['buy'] == True, 'cash spend'] = -sp_buys['close']
+    sp_buys.loc[sp_buys['buy'] == False, 'cash spend'] = 0
+    
+    sp_buys['cash balance'] = sp_buys['cash spend'].cumsum()
+    sp_buys['market value'] = sp_buys['shares owned'] * sp_buys['close']
+    sp_buys['current gain'] = sp_buys['market value'] + sp_buys['cash balance']
+    
+    cols = ['close', 'daily change', 'daily change pct', 'high to date', 'off from high', 'cash spend', 'cash balance', 'market value', 'current gain']
+    sp_buys[cols] = sp_buys[cols].round(2)
+    
+    if buy_dip % 10 == 0:
+        sp_buys.to_csv('./data/buy tables/buy_table_dip=' + str(int(buy_dip)) + '.csv')
+    
+    # aggregate buy table for IRR calculation
+    
+    buy_days = sp_buys['shares owned'].iloc[-1]
+    
+    cash_outflows_yearly = sp_buys.groupby(sp_buys['date'].dt.year).sum()['cash spend']
+    cash_inflow_final = pd.Series(sp_buys.iloc[-1]['market value'], index=[sp_3.iloc[-1]['date'].year])
+    
+    cash_flows = cash_outflows_yearly[:-1].append(pd.Series(cash_outflows_yearly.iloc[-1] + cash_inflow_final, index=[sp_3.iloc[-1]['date'].year]))
+    # cash_flows = cash_outflows_yearly.append(cash_inflow_final)
+    
+    irr = np.irr(cash_flows)
+    
+    return_vs_dip_buy_temp = pd.DataFrame({'dip': buy_dip,
+                                           'buy days': int(buy_days),
+                                           'buy days (%)': 100*np.round(buy_days / len(sp_buys), 4),
+                                           'return (%)': 100*np.round(irr, 4)}, index=[buy_dip])
+    
+    return_vs_dip_buy = return_vs_dip_buy.append(return_vs_dip_buy_temp)
+
+return_vs_dip_buy = return_vs_dip_buy.reset_index().drop(columns=['index'])
+return_vs_dip_buy.to_csv('./data/return_vs_dip_buy.csv')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

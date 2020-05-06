@@ -15,7 +15,7 @@ import numpy as np
 
 
 # Load combined S&P 500 data set
-sp = pd.read_csv('./data/raw/sp500_all.csv')
+sp = pd.read_csv('./data/raw/SP_5.4.2020.csv')
 sp['date'] = pd.to_datetime(sp['Date'])
 sp['close'] = sp['Close']
 sp = sp[['date', 'close']]
@@ -42,7 +42,7 @@ sp_2 = pd.DataFrame({'date': sp['date'],
 
 
 # select date range to filter
-min_year = 1955
+min_year = 1928
 max_year = 2020
 sp_3 = sp_2[(sp_2['date'] >= pd.Timestamp(min_year, 1, 1, 12)) & 
             (sp_2['date'] <= pd.Timestamp(max_year+1, 1, 1, 12))]
@@ -80,115 +80,6 @@ plot_hist(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, xlab
     
 
 
-# ### CALCULATE ANNUALIZED RETURNS ACROSS ALL POSSIBLE TIME INTERVALS ###
-
-# returns_interval = pd.DataFrame(columns=['time interval', 'start year', 'end year', 'start price', 'end price', 'return (%)', 'annual return (%)'])
-# returns_across_time_intervals = pd.DataFrame(columns=['time interval', 'avg return (%)', 'avg annual return (%)', 'annual return stdev (%)'])
-
-# total_time = int((sp_3['date'].iloc[-1] - sp_3['date'].iloc[0]).days / 365)
-
-# for i in range(2, total_time, 1):
-#     year_span = i - 1
-    
-#     for j in range(1928, 2020 - year_span + 1, 1):
-        
-#         # get start and end price over given time interval
-#         start_year = j
-#         end_year = j + year_span
-        
-#         print(year_span, start_year, end_year)
-#         print('***')
-        
-#         start_price = sp_2[(sp_2['date'] >= pd.Timestamp(start_year, 1, 1, 12))].iloc[0]['close']
-#         end_price = sp_2[(sp_2['date'] >= pd.Timestamp(end_year, 1, 1, 12))].iloc[0]['close']
-        
-#         # append return data to growing dataframe 
-#         returns_interval_temp = pd.DataFrame({'time interval': year_span,
-#                                               'start year': start_year,
-#                                               'end year': end_year, 
-#                                               'start price': start_price,
-#                                               'end price': end_price,
-#                                               'return (%)': 100*((end_price / start_price) - 1),
-#                                               'annual return (%)': 100*((end_price / start_price) ** (1/year_span) - 1)
-#                                               }, index=[0])
-#         returns_interval = returns_interval.append(returns_interval_temp, ignore_index = True)
-
-#     # append statistical data to growing dataframe
-#     returns_across_time_intervals_temp = pd.DataFrame({'time interval': year_span,
-#                                                        'avg return (%)': round(np.nanmean(returns_interval['return (%)']),3),
-#                                                        'avg annual return (%)': round(np.nanmean(returns_interval['annual return (%)']), 3),
-#                                                        'annual return stdev (%)': round(np.std(returns_interval['annual return (%)']), 3),
-#                                                        }, index=[0])
-
-#     returns_across_time_intervals = returns_across_time_intervals.append(returns_across_time_intervals_temp, ignore_index = True)
-        
-    
-# returns_across_time_intervals.to_csv('./data/returns_across_time_intervals_since_' + str(min_year) + '.csv', index=False)
-# returns_interval.to_csv('./data/returns_across_time_intervals_full_since_' + str(min_year) + '.csv', index=False)
-
-
-
-
-
-
-
-
-
-### PLOT HISTORICAL RETURNS BY INVESTMENT HORIZON ###
-
-returns_interval = pd.read_csv('./data/returns_across_time_intervals_full.csv')
-
-# # select date range to filter
-min_year = 1928
-max_year = 2020
-returns_interval_filtered = returns_interval[(returns_interval['start year'] >= min_year) & 
-            (returns_interval['start year'] <= max_year)]
-
-
-total_time = max_year - min_year
-
-
-# create seaborn box + strip plot
-import seaborn as sns
-fig, ax = plt.subplots(1, 1, figsize = (20, 20))
-
-ax = sns.boxplot(x = 'time interval', y = 'annual return (%)', data = returns_interval_filtered, 
-                 showfliers = False, order = list(set(returns_interval['time interval'])), linewidth = 1)
-ax = sns.stripplot(x = 'time interval', y = 'annual return (%)', data = returns_interval_filtered,
-                 order = list(set(returns_interval['time interval'])), jitter = 0.25, size = 5,
-                 linewidth = 1, edgecolor = 'black', alpha = 0.5)
-
-ax.axhline(y=0, linestyle=':', linewidth=3, color='grey')
-
-# set axis properties
-plt.xticks(fontname = 'Helvetica', fontsize = 42)
-plt.yticks(fontname = 'Helvetica', fontsize = 42)
-
-import matplotlib.ticker as ticker
-ax.xaxis.set_major_locator(ticker.MultipleLocator(10))
-ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
-
-plt.xlabel('Time horizon (years)', fontsize = 55, fontname = 'Arial', fontweight = 'bold')
-plt.ylabel('Annual return (%)', fontsize = 55, fontname = 'Arial', 
-           fontweight = 'bold')
-
-ax.set_ylim(0, 14); ax.yaxis.labelpad = 25
-# ax.set_ylim(-40, 50); ax.yaxis.labelpad = 25
-
-ax.set_xlim(-1, total_time); ax.xaxis.labelpad = 25
-ax.xaxis.set_tick_params(width = 3, length = 15)
-ax.yaxis.set_tick_params(width = 3, length = 15)
-plt.setp(ax.spines.values(), linewidth = 3)
-
-# turn grid on
-plt.grid(color=(.75, .75, .75))
-plt.grid(color=(.75, .75, .75))
-
-figure_name = './images/3 - returns over time intervals/returns_vs_interval_' + str(min_year) + '_' + str(max_year) + '.png'
-
-plt.tight_layout()
-# plt.savefig(figure_name, dpi = 150)
-plt.show()
 
 
 ### PLOT HISTOGRAM OF PERCENT OFF HIGH ###
@@ -300,7 +191,7 @@ plt.show()
 
 ### plot line of close fraction vs. off %
 
-fract_pct_off = pd.read_csv('./data/fract_pct_off_1928_2020.csv')
+fract_pct_off = pd.read_csv('./data/2 - fraction pct off/fract_pct_off_1955_2020.csv')
 # fract_pct_off = pd.read_csv('./data/fract_pct_off_1955_2020.csv')
 
 # linear scale
@@ -341,17 +232,147 @@ plt.show()
 
 
 
-# print table showing fraction of closes below x% of record high
-# fract_pct_off = pd.DataFrame(columns=['percent off', 'fraction of days (%)'])
-# for i in np.arange(0,60,0.1):
-#     pct_off = i
-#     fract_pct_off_temp = pd.DataFrame({'percent off': -i, 
-#                                       'fraction of days (%)': round(100*len(sp_3[sp_3['off from high'] <= -pct_off]) / len(sp_3), 2)}, index=[0])
-    
-#     fract_pct_off = fract_pct_off.append(fract_pct_off_temp, ignore_index=True)
-    
-# fract_pct_off = fract_pct_off[::-1].reset_index().iloc[:,1:]
-# fract_pct_off.style.hide_index()
+
+# # GET CORRELATIONS IN DAILY MOVEMENTS ACROSS CONSECUTIVE DAYS
+
+# sp_4 = pd.DataFrame({'date': sp_3['date'],
+#                       'change day 1': sp_3['daily change pct'],
+#                       'change day 2': sp_3['daily change pct'].shift(-1)})
+
+# change_corr = pd.DataFrame(columns=['min change day 1', 'corr with change day 2'])
+# for i in np.arange(0,15.1,0.1):
+#     # sp_selected = sp_4[sp_4['change day 1'] > round(i,1)]
+#     sp_selected = sp_4[(sp_4['change day 1'] > round(i,1)) | (sp_4['change day 1'] < -round(i,1))]
+#     change_corr_temp = pd.DataFrame({'min change day 1': round(i,1),
+#                                     'corr with change day 2': round(sp_selected.corr().iloc[0][1],3)}
+#                                     , index=[0])
+#     change_corr = change_corr.append(change_corr_temp)
+
+# change_corr.to_csv('./data/change_correlations_' + str(min_year) + '_' + str(max_year) + '.csv')
+
+
+
+# line plot: correlation vs. minimum change
+
+# change_corr = pd.read_csv('./data/change_correlations_1928_2020.csv')
+change_corr = pd.read_csv('./data/change_correlations_1955_2020.csv')
+
+fig, ax = plt.subplots(1, 1, figsize = (7, 7))
+x = change_corr['min change day 1']
+y = change_corr['corr with change day 2']
+ax.plot(x, y, 'blue', linewidth=3, zorder=20)
+ax.axhline(y=0, linestyle=':', linewidth=2, color='grey', zorder=10)
+
+ax.set_xlabel('Minimum day 1 change (%)', fontsize = 18, fontname = 'Helvetica', fontweight = 'bold')
+ax.set_ylabel('Correlation with day 2 change', fontsize = 18, fontname = 'Helvetica', fontweight = 'bold')
+
+# set axis tick label properties
+plt.setp(ax.get_xticklabels(), fontsize=14, fontname = 'Helvetica')
+plt.setp(ax.get_yticklabels(), fontsize=14, fontname = 'Arial')
+
+# axis limits
+ax.set_xlim(-0.1, 11); ax.xaxis.labelpad = 15
+ax.set_ylim(-1, 0.05); ax.yaxis.labelpad = 15
+
+# turn grid on
+ax.grid(color=(.9, .9, .9))
+
+# plt.subplots_adjust(wspace = 0.35)
+plt.gcf().subplots_adjust(bottom=0.15, left=0.2)
+
+figure_name = './images/5 - movement correlations/movement_correlation_across_days_' + str(min_year) + '_' + str(max_year) + '.png' 
+plt.savefig(figure_name, dpi = 250)
+plt.show()
+
+
+# # scatter plot: day 1 change vs. day 2 change
+
+# x = sp_4['change day 1']
+# y = sp_4['change day 2']
+
+# x_avg = np.mean(x)
+# y_avg = np.mean(y)
+
+# # scatter plot
+# fig, ax = plt.subplots(1, 1, figsize=(7,7))
+# ax.scatter(x,y, edgecolor='black', facecolor='blue', alpha=0.04)
+# plt.xlim(-3, 3); plt.ylim(-3, 3) 
+# plt.xlabel('Daily change (%)', fontsize = 18, fontname = 'Helvetica')
+# plt.ylabel("Next day's change (%)", fontsize = 18, fontname = 'Helvetica')
+
+# ax.tick_params(axis = 'x', labelsize = 14)
+# ax.tick_params(axis = 'y', labelsize = 14)
+
+# for tick in ax.get_xticklabels():
+#     tick.set_fontname('Helvetica')
+# for tick in ax.get_yticklabels():
+#     tick.set_fontname('Helvetica')
+
+# plt.grid(); ax.grid(color=(.9, .9, .9)); ax.set_axisbelow(True)
+# plt.show()
+
+
+
+### CALCULATE TIME INTERVAL BETWEEN NEIGHBORING HIGHS ###
+
+# sp_5 = sp_3[sp_3['off from high'] == 0]
+# high_fraction = len(sp_5)/len(sp_3)
+
+# neighboring_highs = pd.DataFrame({'high date': sp_5['date'],
+#                                   'high close': sp_5['close'],
+#                                   'next high date': sp_5['date'].shift(-1),
+#                                   'next high close': sp_5['close'].shift(-1),
+#                                   'date diff': (sp_5['date'].shift(-1) - sp_5['date']).astype('timedelta64[D]'),
+#                                   'close diff': round(sp_5['close'].shift(-1) - sp_5['close'], 3),
+#                                   'close diff (%)': round(100*(sp_5['close'].shift(-1) - sp_5['close'])/sp_5['close'], 3)})
+
+# neighboring_highs.to_csv('./data/neighboring_highs.csv')
+
+# plot histogram
+
+neighboring_highs = pd.read_csv('./data/4 - time between neighboring highs/neighboring_highs.csv')
+
+# create textbox
+data = neighboring_highs['date diff']
+# data = neighboring_highs['close diff (%)']
+average = np.nanmean(data)
+median = np.nanmedian(data)
+stdev = np.std(data)
+props = dict(facecolor='white', edgecolor='none', alpha=0.67)
+textbox = '$Time$ $between$ $highs$ $(days)$ \nMean = %0.1f \nMedian = %0.0f \nSt. dev. = %0.0f' % (average, median, stdev)
+text_pos = 0.35
+
+from plotfunctions_1 import plot_hist
+save=False
+binwidth = 10
+xmin = -20; xmax = 300
+ymin = 0; ymax = 1500
+xlabel = 'Time between highs (days)'; ylabel = 'Counts'
+figure_name = './images/6 - time between highs/time_between_highs_' + str(min_year) + '_' + str(max_year) + '.png'
+plot_hist(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, xlabel, ylabel, save, figure_name)
+
+from plotfunctions_1 import plot_hist_log_y
+save=True
+binwidth = 10
+xmin = 0; xmax = 3000
+ymin = 0; ymax = 1500; yticks = [1, 10, 100, 1000]
+xlabel = 'Time between highs (days)'; ylabel = 'Counts'
+figure_name = './images/6 - time between highs/time_between_highs_log_' + str(min_year) + '_' + str(max_year) + '.png'
+plot_hist_log_y(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, xlabel, ylabel, yticks, save, figure_name)
+
+
+
+
+### how many new highs between recessions?
+
+
+
+
+
+
+
+
+
 
 
 
