@@ -10,11 +10,10 @@ Created on Mon May 27 14:14:07 2019
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import pandas as pd
 
 # plot histogram
 
-def plot_hist(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, xlabel, ylabel, save, figure_name):
+def plot_hist(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, yint, xlabel, ylabel, save, figure_name):
     fig, ax = plt.subplots(1,1,figsize=(7,7))
     bins = np.arange(round(min(data),1), max(data) + binwidth, binwidth)
     props = dict(facecolor='white', alpha=1.0)
@@ -44,6 +43,11 @@ def plot_hist(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, 
     xscale = 1
     ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x/xscale))
     ax.xaxis.set_major_formatter(ticks)
+    
+    # force integers on y-axis
+    if yint == True:
+        from matplotlib.ticker import MaxNLocator
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     if save == True:
         plt.savefig(figure_name, dpi = 600)

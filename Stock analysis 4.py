@@ -53,7 +53,7 @@ sp_3
 
 return_vs_dip_buy = pd.DataFrame(columns=['dip', 'buy days', 'buy days (%)', 'return (%)'])
 
-sp_buys = sp_3
+sp_buys = sp_3.copy()
 
 for dip in np.arange(-60,0.1,0.1):
 
@@ -85,11 +85,25 @@ for dip in np.arange(-60,0.1,0.1):
     cash_outflows_yearly = sp_buys.groupby(sp_buys['date'].dt.year).sum()['cash spend']
     cash_inflow_final = pd.Series(sp_buys.iloc[-1]['market value'], index=[sp_3.iloc[-1]['date'].year])
 
-    # last cash flow is sum of last year's stock purchase plus implicit sale of entire position    
-    cash_flows = cash_outflows_yearly[:-1].append(pd.Series(cash_outflows_yearly.iloc[-1] + cash_inflow_final, index=[sp_3.iloc[-1]['date'].year]))
+
+    # aggregate monthly instead of yearly 
+    sp_buys.insert(0, column='year', value=sp_buys['date'].dt.year)
+    sp_buys.insert(0, column='month', value=sp_buys['date'].dt.month)
+    sp_buys.insert(0, column='day', value=sp_buys['date'].dt.day)
+    cash_outflows_monthly = sp_buys.groupby(by=[sp_buys['year'], sp_buys['month']]).sum()['cash spend']
+    
+    # no aggregation - can I calculate IRR from daily data?
+    asdf
+    
+    
+
+    # last cash flow is sum of last (interval - year/month)'s stock purchase plus implicit sale of entire position    
+    cash_flows_yearly_all = cash_outflows_yearly[:-1].append(pd.Series(cash_outflows_yearly.iloc[-1] + cash_inflow_final, index=[sp_3.iloc[-1]['date'].year]))
+    cash_flows_monthly_all = cash_outflows_monthly[:-1].append(pd.Series(cash_outflows_monthly.iloc[-1] + cash_inflow_final, index=[sp_3.iloc[-1]['date'].year]))
     
     # calculate internal rate (IRR) of return of this cash flow schedule
-    irr = np.irr(cash_flows)
+    irr_yearly = np.irr(cash_flows_yearly_all)  # bigger bc assumes May 1 value recovered on Jan 1
+    irr_monthly = np.irr(cash_flows_monthly_all)*12 # smaller bc May 1 value recovered on May 1 (it's correct)
 
     
     # build growing table of returns vs. threshold for dip buying

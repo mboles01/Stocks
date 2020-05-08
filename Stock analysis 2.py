@@ -326,7 +326,7 @@ plt.show()
 #                                   'close diff': round(sp_5['close'].shift(-1) - sp_5['close'], 3),
 #                                   'close diff (%)': round(100*(sp_5['close'].shift(-1) - sp_5['close'])/sp_5['close'], 3)})
 
-# neighboring_highs.to_csv('./data/neighboring_highs.csv')
+# neighboring_highs.to_csv('./data/4 - time between neighboring highs/neighboring_highs.csv', index=False)
 
 # plot histogram
 
@@ -363,7 +363,191 @@ plot_hist_log_y(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax
 
 
 
-### how many new highs between recessions?
+# # how many new highs between "recessions"? - periods of a given time interval with no new records set
+
+# last_highs = pd.DataFrame(columns=['high date', 'high close', 'next high date', 'next high close', 'date diff', 'close diff', 'close diff (%)', 'last high', 'remaining highs', 'min days no high'])
+# remaining_highs = pd.DataFrame(columns=['high date', 'high close', 'next high date', 'next high close', 'date diff', 'close diff', 'close diff (%)', 'last high', 'remaining highs'])
+
+# for i in np.arange(10, 1000, 10):
+#     min_days_no_high = i
+#     print(min_days_no_high)
+#     remaining_highs_temp = neighboring_highs.copy()
+    
+#     remaining_highs_temp['last high'] = remaining_highs_temp['date diff'].apply(lambda x: 1 if x >= min_days_no_high else 0)
+#     remaining_highs_temp['remaining highs'] = remaining_highs_temp.groupby(remaining_highs_temp['last high'].gt(0).cumsum()).cumcount(ascending=False)
+    
+#     last_highs_temp = remaining_highs_temp[remaining_highs_temp['last high'] == 1]
+#     last_highs_temp['min days no high'] = int(min_days_no_high)
+    
+#     print(last_highs_temp)
+    
+#     remaining_highs = remaining_highs.append(remaining_highs_temp)
+#     last_highs = last_highs.append(last_highs_temp)
+
+# last_highs.to_csv('./data/4 - time between neighboring highs/last_highs.csv', index=False)
+# remaining_highs.to_csv('./data/4 - time between neighboring highs/remaining_highs.csv', index=False)
+ 
+
+
+### PLOT NUMBER OF NEW HIGHS SET VS. NUMBER OF DAYS WITHOUT A HIGH ###
+
+last_highs = pd.read_csv('./data/4 - time between neighboring highs/last_highs.csv')
+
+min_days = 100
+max_days = 10000
+min_days_no_high = 360
+last_highs_filtered = last_highs[(last_highs['date diff'] >= min_days) & 
+                                 (last_highs['date diff'] <= max_days) & 
+                                 (last_highs['min days no high'] == min_days_no_high)]
+
+# last_highs_filtered = last_highs[last_highs['min days no high'] == min_days_no_high]
+
+# plot histogram
+data = last_highs_filtered['remaining highs']
+
+# create textbox
+average = np.nanmean(data)
+median = np.nanmedian(data)
+stdev = np.std(data)
+from scipy.stats import skew, kurtosis
+props = dict(facecolor='white', edgecolor='none', alpha=0.67)
+textbox = '$New$ $highs$ \nMean = %0.1f \nMedian = %0.0f \nSt. dev. = %0.1f' % (average, median, stdev)
+text_pos = 0.05
+
+from plotfunctions_1 import plot_hist
+save=False
+binwidth = 10
+xmin = -1; xmax = 130
+ymin = 0; ymax = 3
+yint = True
+# xlabel = 'Number of new highs after first high in ' + str(min_days_no_high) + ' days'; ylabel = 'Counts'
+xlabel = 'Number of new highs after first high in at least one year'; ylabel = 'Counts'
+figure_name = './images/4 - down from high/number_of_highs.png'
+plot_hist(data, binwidth, textbox, props, text_pos, xmin, xmax, ymin, ymax, yint, xlabel, ylabel, save, figure_name)
+
+
+
+### PLOT S&P 500 DATA WITH LAST HIGHS ON TOP OF IT
+
+fig, ax = plt.subplots(1, 1, figsize = (7,7))
+x = sp['date']
+y = sp['close']
+
+last_highs_vline = pd.to_datetime(last_highs_filtered['high date'])
+
+# log scale
+import matplotlib
+ax.plot(x, y, 'blue')
+ax.set_xlabel('Year', fontsize = 18, fontname = 'Helvetica', fontweight = 'bold')
+ax.set_ylabel('Close', fontsize = 18, fontname = 'Helvetica', fontweight = 'bold')
+ax.set_yscale('log')
+ax.set_yticks([10, 20, 50, 100, 200, 500, 1000, 2000, 3000])
+ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+
+for high in last_highs_vline:
+    ax.axvline(high, linewidth=1, color='r', zorder=1)
+
+# set axis tick label properties
+plt.setp(ax.get_xticklabels(), rotation=30, fontsize=14, fontname = 'Helvetica')
+plt.setp(ax.get_yticklabels(), fontsize=14, fontname = 'Helvetica')
+
+# turn grid on
+ax.grid(color=(.9, .9, .9))
+
+figure_name = './images/4 - down from high/highs_taking_minimum_1y_to_retest.png'
+plt.subplots_adjust(wspace = 0.35)
+plt.gcf().subplots_adjust(bottom=0.15)
+plt.savefig(figure_name, dpi = 250)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+# import matplotlib.pyplot as plt
+# import matplotlib.ticker as ticker
+
+# # plot scatter data and line of best fit
+# x = last_highs_filtered['date diff']
+# y = last_highs_filtered['remaining highs']
+# fig, ax = plt.subplots(1, 1, figsize=(7,7))
+# ax.scatter(x, y, edgecolor='black', facecolor='blue', alpha=0.5)
+# plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)), '#ff4c00', linewidth=3)
+
+# plt.xlim(0,1000)
+# # plot fit
+# x_axis_smooth = np.arange(min(year_age_median_price['Age']), max(year_age_median_price['Age'])+1, .1)
+# plt.plot(x_axis_smooth, exp_function(x_axis_smooth, *popt), '#ff4c00', linewidth=3)
+
+# set x- and y- labels
+xlabel = 'Time since previous high (days)'
+ylabel = 'Number of highs' 
+# yscale = 1000
+
+plt.xlabel(xlabel, fontsize = 18, fontname = 'Helvetica')
+plt.ylabel(ylabel, fontsize = 18, fontname = 'Helvetica')
+ax.tick_params(axis = 'x', labelsize = 14)
+ax.tick_params(axis = 'y', labelsize = 14)
+
+# force integers on x-axis
+from matplotlib.ticker import MaxNLocator
+ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    
+# # set up text box
+# props_1 = dict(facecolor='white', edgecolor='none', alpha=0.67)
+# props_2 = dict(facecolor='white', edgecolor='none', alpha=0.67)
+
+# textbox_1 = r'$P(t) = a{\bullet}exp(-bt)$'
+# textbox_2 = '$a$ = %5.0f \n$b$ = %0.3f' % (popt[0], popt[1]) + '\n$R^{2}$ = %5.2f' % r_squared_all
+# textbox_3 = '$Half$ $life:$ ' + str(round(0.6931/popt[1], 2)) + ' $y$'
+
+# ax.text(0.54, 0.95, textbox_1, transform = ax.transAxes, fontsize = 18, 
+#         fontname = 'Helvetica', verticalalignment = 'top', bbox = props_1)
+
+# ax.text(0.72, 0.85, textbox_2, transform = ax.transAxes, fontsize = 18, 
+#         fontname = 'Helvetica', verticalalignment = 'top', bbox = props_2)
+
+# ax.text(0.625, 0.65, textbox_3, transform = ax.transAxes, fontsize = 18, 
+#         fontname = 'Helvetica', verticalalignment = 'top', bbox = props_2)
+
+
+for tick in ax.get_xticklabels():
+    tick.set_fontname('Helvetica')
+for tick in ax.get_yticklabels():
+    tick.set_fontname('Helvetica')
+
+plt.rcParams['axes.unicode_minus'] = False
+plt.grid(); ax.grid(color=(.9, .9, .9)); ax.set_axisbelow(True)
+
+ticks = ticker.FuncFormatter(lambda y, pos: '{0:g}'.format(y/yscale))
+ax.yaxis.set_major_formatter(ticks)
+
+figure_name = '../images/depr_by_model/' + str(counter) + '_' + str(model) + '.png'
+plt.savefig(figure_name, dpi = 600)
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
