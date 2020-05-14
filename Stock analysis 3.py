@@ -47,6 +47,7 @@ sp_3
 
 
 
+
 ### CALCULATE ANNUALIZED RETURNS ACROSS ALL POSSIBLE TIME INTERVALS WITH MONTHLY SAMPLING ###
 # from datetime import datetime as dt
 # returns_interval = pd.DataFrame(columns=['time interval', 'start year', 'end year', 'start, end month', 'start price', 'end price', 'return (%)', 'annual return (%)'])
@@ -105,14 +106,30 @@ sp_3
 
 
 
-
-
 ### PLOT HISTORICAL RETURNS BY INVESTMENT HORIZON ###
 
 returns_interval = pd.read_csv('./data/5 - returns across time intervals/returns_across_time_intervals_full_monthly.csv')
 
+# # calculate statistical moments of returns across time intervals
+# returns_1y = returns_interval[returns_interval['time interval'] == 1]['annual return (%)']
+# returns_10y = returns_interval[returns_interval['time interval'] == 10]['annual return (%)']
+# returns_30y = returns_interval[returns_interval['time interval'] == 30]['annual return (%)']
+
+# one_year = [round(np.mean(returns_1y), 2), round(np.median(returns_1y), 2), round(np.std(returns_1y), 2)]
+# ten_year = [round(np.mean(returns_10y), 2), round(np.median(returns_10y), 2), round(np.std(returns_10y), 2)]
+# thirty_year = [round(np.mean(returns_30y), 2), round(np.median(returns_30y), 2), round(np.std(returns_30y), 2)]
+
+# returns_summary = pd.DataFrame({' ': ['Mean', 'Median', 'St. dev.'],
+#                                 'One year': one_year,
+#                                 'Ten years': ten_year,
+#                                 'Thirty years': thirty_year})
+
+# returns_summary.to_csv('./data/5 - returns across time intervals/return_summary.csv', index=False)
+
+
+
 # select date range to filter
-min_year = 1965
+min_year = 1955
 max_year = 2020
 returns_interval_filtered = returns_interval[(returns_interval['start year'] >= min_year) & 
             (returns_interval['start year'] <= max_year)]
@@ -158,7 +175,7 @@ plt.grid(color=(.75, .75, .75))
 figure_name = './images/3 - returns over time intervals/returns_vs_interval_' + str(min_year) + '_' + str(max_year) + '.png'
 
 plt.tight_layout()
-plt.savefig(figure_name, dpi = 150)
+# plt.savefig(figure_name, dpi = 150)
 plt.show()
 
 
